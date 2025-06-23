@@ -109,7 +109,7 @@ elif page == "📝 리뷰":
 
             # 다음 렌더링 때 초기화되도록 플래그 설정
             st.session_state["clear_review_input"] = True
-            st.rerun()  # ← Streamlit 1.39부터 공식 지원
+            st.rerun() 
 
     st.divider()
     st.subheader(f"📋 '{selected_store}'에 대한 리뷰 목록")
