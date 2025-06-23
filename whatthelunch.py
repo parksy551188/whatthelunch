@@ -3,10 +3,10 @@ import random
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import json
 
-# --- Google Sheets 인증 ---
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("gspread_key.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_CREDS"], scope)
 client = gspread.authorize(creds)
 
 spreadsheet = client.open("ys_store")
