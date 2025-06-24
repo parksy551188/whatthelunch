@@ -19,7 +19,7 @@ sheet_review = spreadsheet.worksheet("리뷰")  # ✅ 리뷰 시트
 restaurant_lst = [row[1].strip() for row in sheet_store.get_all_values()[1:] if row[1]]
 
 # --- 페이지 분기 ---
-page = st.sidebar.selectbox("페이지 선택", ["🍽️ 음식점 추천", "📝 리뷰", "📊 방문 통계"])
+page = st.sidebar.selectbox("페이지 선택", ["📝 리뷰","🍽️ 음식점 추천", "📊 방문 통계"])
 
 # ============================================
 # ✅ 추천 기능 페이지
