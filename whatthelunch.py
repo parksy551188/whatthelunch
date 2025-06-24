@@ -22,7 +22,7 @@ def get_visit_data():
 
 @st.cache_data(ttl=60)
 def get_restaurant_list():
-    return [r.strip() for r in sheet_store.col_values(1)[1:]]
+    return [r.strip() for r in sheet_store.col_values(2)[1:]]
 
 restaurant_lst = get_restaurant_list()
 
