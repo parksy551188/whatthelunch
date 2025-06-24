@@ -44,11 +44,12 @@ if page == "🍽️ 음식점 추천":
     col_idx = names.index(person_name) + 2
     visit_records = sheet_visit.col_values(col_idx)[1:]
     dates = sheet_visit.col_values(1)[1:]
-    recent = [r for r in visit_records if r][-5:]
+    recent = [r.strip() for r in visit_records if r][-5:]
 
     st.markdown(f"최근 **{person_name}**님의 방문 음식점: {' / '.join(recent)}")
 
-    candidates = [r for r in restaurant_lst if r not in recent]
+    restaurant_cleaned = [r.strip() for r in restaurant_lst]
+    candidates = [r for r in restaurant_cleaned if r not in recent]
     if not candidates:
         st.warning("추천할 음식점이 없습니다.")
         st.stop()
