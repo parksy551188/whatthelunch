@@ -46,9 +46,22 @@ if page == "🍽️ 음식점 추천":
         st.warning("⚠️ 이름을 선택해 주세요.")
         st.stop()
 
-    col_idx = names.index(person_name) + 2
-    visit_records = sheet_visit.col_values(col_idx)[1:]
+    visit_data = get_visit_data()
+    header = visit_data[0]
+    data = visit_data[1:]
+    df_visit = pd.DataFrame(data, columns=header)
+
+    # 해당 사람의 방문 기록만 추출
+    if person_name not in df_visit.columns:
+        st.warning(f"{person_name} 님의 기록이 없습니다.")
+        st.stop()
+
+    visit_records = df_visit[person_name].dropna().tolist()
     recent = [r.strip() for r in visit_records if r][-5:]
+
+    # col_idx = names.index(person_name) + 2
+    # visit_records = sheet_visit.col_values(col_idx)[1:]
+    # recent = [r.strip() for r in visit_records if r][-5:]
 
     st.markdown(f"최근 **{person_name}**님의 방문 음식점: {' / '.join(recent)}")
 
