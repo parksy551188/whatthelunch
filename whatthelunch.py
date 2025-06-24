@@ -11,9 +11,10 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_CREDS"], scope)
 client = gspread.authorize(creds)
 
-spreadsheet = client.open("ys_store")
+spreadsheet = client.open_by_key("1VludMNe8d_1nd39Vnm7b1i2VhZMHyO8N0BIKfVWZcWI")
+# spreadsheet = client.open("ys_store")
 def get_worksheet(sheet_name):
-    return client.open_by_key("스프레드시트 키").worksheet(sheet_name)
+    return client.open_by_key("1VludMNe8d_1nd39Vnm7b1i2VhZMHyO8N0BIKfVWZcWI").worksheet(sheet_name)
 
 sheet_store = get_worksheet("음식점리스트")
 sheet_visit = get_worksheet("방문기록")
