@@ -96,8 +96,6 @@ elif page == "📝 리뷰":
     restaurant_options = ['전체']+restaurant_lst
     selected_store = st.selectbox('음식점을 선택하세요', restaurant_options, index=0)
 
-    selected_store = st.selectbox("음식점을 선택하세요", restaurant_lst)
-
     # 입력창은 '전체'가 아닌 경우에만 표시 
     if selected_store != '전체':
         if st.session_state.get("clear_review_input"):
