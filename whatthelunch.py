@@ -12,9 +12,16 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["GOOGLE_CRED
 client = gspread.authorize(creds)
 
 spreadsheet = client.open("ys_store")
-sheet_store = spreadsheet.worksheet("음식점리스트")
-sheet_visit = spreadsheet.worksheet("방문기록")
-sheet_review = spreadsheet.worksheet("리뷰")  # ✅ 리뷰 시트
+def get_worksheet(sheet_name):
+    return client.open_by_key("스프레드시트 키").worksheet(sheet_name)
+
+sheet_store = get_worksheet("음식점리스트")
+sheet_visit = get_worksheet("방문기록")
+sheet_review = get_worksheet("리뷰")
+
+# sheet_store = spreadsheet.worksheet("음식점리스트")
+# sheet_visit = spreadsheet.worksheet("방문기록")
+# sheet_review = spreadsheet.worksheet("리뷰")  # ✅ 리뷰 시트
 
 @st.cache_data(ttl=60)
 def get_visit_data():
