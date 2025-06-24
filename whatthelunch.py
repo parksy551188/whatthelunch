@@ -103,6 +103,77 @@ if page == "🍽️ 음식점 추천":
                     st.warning("추천할 음식점이 더 없습니다.")
 
 # ============================================
+# ✅ 리뷰 작성 및 보기 페이지
+# ============================================
+elif page == "📝 리뷰":
+    st.title("📝 음식점 리뷰")
+
+    restaurant_options = ['전체']+restaurant_lst
+    selected_store = st.selectbox('음식점을 선택하세요', restaurant_options, index=0)
+
+    # 입력창은 '전체'가 아닌 경우에만 표시 
+    if selected_store != '전체':
+        if st.session_state.get("clear_review_input"):
+            st.session_state["review_input"] = ""
+            st.session_state["clear_review_input"] = False  # 플래그 해제
+
+        # 입력란 렌더링 (이후에는 값 변경 금지)
+        review_text = st.text_area(
+            "리뷰 내용을 입력하세요",
+            placeholder="자유롭게 리뷰를 작성해주세요",
+            key="review_input"
+        )
+
+        # 등록 버튼
+        if st.button("리뷰 등록"):
+            if review_text.strip() == "":
+                st.warning("리뷰 내용을 입력해주세요.")
+            else:
+                now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                new_row = [selected_store, now, review_text]
+                sheet_review.append_row(new_row, value_input_option='RAW')
+                st.success("✅ 리뷰가 등록되었습니다!")
+
+                # 다음 렌더링 때 초기화되도록 플래그 설정
+                st.session_state["clear_review_input"] = True
+                st.rerun() 
+
+    st.divider()
+    # st.subheader(f"📋 '{selected_store}'에 대한 리뷰 목록")
+
+    # 전체 리뷰 불러오기
+    reviews = sheet_review.get_all_values()[1:]  # 헤더 제외
+    reviews = sorted(reviews, key=lambda x: x[1], reverse=True)
+
+    # 필터링
+    if selected_store == '전체':
+        filtered_reviews = reviews
+        st.subheader('📋 전체 음식점 리뷰')
+    else:
+        filtered_reviews = [r for r in reviews if r[0].strip() == selected_store.strip()]
+        st.subheader(f"📋 '{selected_store}'에 대한 리뷰 목록")
+    
+    if filtered_reviews:
+        for r in filtered_reviews:
+            st.markdown(f"### 🍽️ {r[0]}")
+            st.markdown(f"**🕒 {r[1]}**")
+            st.write(r[2])
+            st.markdown("---")
+    else:
+        st.info('아직 등록된 리뷰가 없습니다. ')
+
+    # store_reviews = [r for r in reviews if r[0].strip() == selected_store.strip()]
+    # store_reviews = sorted(store_reviews, key=lambda x: x[1], reverse=True)
+
+    # if store_reviews:
+    #     for r in store_reviews:
+    #         st.markdown(f"**🕒 {r[1]}**")
+    #         st.write(r[2])
+    #         st.markdown("---")
+    # else:
+    #     st.info("아직 등록된 리뷰가 없습니다.")
+
+# ============================================
 # ✅ EDA 페이지
 # ============================================
 elif page == "📊 방문 통계":
