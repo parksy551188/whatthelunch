@@ -27,7 +27,6 @@ page = st.sidebar.selectbox("페이지 선택", [ "📝 리뷰","🍽️ 음식�
 if page == "🍽️ 음식점 추천":
     st.title("🍽️ 점심 뭐먹🤔")
 
-    # 이름 목록 추출
     names = sheet_visit.row_values(1)[1:]
     person_name = st.selectbox("이름을 선택하세요", names)
 
@@ -35,7 +34,6 @@ if page == "🍽️ 음식점 추천":
         st.warning("⚠️ 이름을 선택해 주세요.")
         st.stop()
 
-    # 선택한 이름 저장 및 변경 시 상태 초기화
     if "selected_person" not in st.session_state:
         st.session_state.selected_person = person_name
     elif st.session_state.selected_person != person_name:
@@ -43,28 +41,36 @@ if page == "🍽️ 음식점 추천":
         st.session_state.current_choice = None
         st.session_state.recommend_pool = None
 
-    # 방문 기록 가져오기
     col_idx = names.index(person_name) + 2
-    visit_records = sheet_visit.col_values(col_idx)[1:]
-    recent = [r.strip() for r in visit_records if r][-5:]  # 최근 5개 strip
+    visit_records_raw = sheet_visit.col_values(col_idx)[1:]
+
+    # ⚠️ visit_records 디버깅 로그 출력
+    st.write("📋 visit_records_raw", visit_records_raw)
+
+    visit_records = [r.strip() for r in visit_records_raw if r and r.strip() != ""]
+    recent = visit_records[-5:]  # 최근 5개만 추출
 
     st.markdown(f"최근 **{person_name}**님의 방문 음식점: {' / '.join(recent) if recent else '없음'}")
 
-    # 음식점 리스트 정제
-    restaurant_cleaned = [r.strip() for r in restaurant_lst if r.strip()]
+    # ⚠️ restaurant_lst 디버깅 로그
+    restaurant_cleaned = list(set([r.strip() for r in restaurant_lst if r and r.strip() != ""]))
+    st.write("📋 restaurant_cleaned", restaurant_cleaned)
+
+    # 후보 음식점 추출
     candidates = [r for r in restaurant_cleaned if r not in recent]
+
+    # ⚠️ candidates 디버깅 로그
+    st.write("📋 candidates", candidates)
 
     if not candidates:
         st.warning("추천할 음식점이 없습니다.")
         st.stop()
 
-    # 추천 풀 초기화
     if 'recommend_pool' not in st.session_state:
         st.session_state.recommend_pool = candidates.copy()
     if 'current_choice' not in st.session_state:
         st.session_state.current_choice = None
 
-    # 추천 버튼
     if st.button('추천'):
         if st.session_state.recommend_pool:
             st.session_state.current_choice = random.choice(st.session_state.recommend_pool)
@@ -72,7 +78,6 @@ if page == "🍽️ 음식점 추천":
         else:
             st.warning("추천할 음식점이 더 없습니다.")
 
-    # 추천 결과 표시
     if st.session_state.current_choice:
         st.success(f'🍽️ 추천 음식점: **{st.session_state.current_choice}**')
 
@@ -86,8 +91,6 @@ if page == "🍽️ 음식점 추천":
                 cell_list[-1].value = st.session_state.current_choice
                 sheet_visit.update_cells(cell_list)
                 st.success("✅ 저장 완료!")
-
-                # 상태 초기화
                 del st.session_state.recommend_pool
                 del st.session_state.current_choice
 
@@ -98,77 +101,6 @@ if page == "🍽️ 음식점 추천":
                     st.session_state.recommend_pool.remove(st.session_state.current_choice)
                 else:
                     st.warning("추천할 음식점이 더 없습니다.")
-
-# ============================================
-# ✅ 리뷰 작성 및 보기 페이지
-# ============================================
-elif page == "📝 리뷰":
-    st.title("📝 음식점 리뷰")
-
-    restaurant_options = ['전체']+restaurant_lst
-    selected_store = st.selectbox('음식점을 선택하세요', restaurant_options, index=0)
-
-    # 입력창은 '전체'가 아닌 경우에만 표시 
-    if selected_store != '전체':
-        if st.session_state.get("clear_review_input"):
-            st.session_state["review_input"] = ""
-            st.session_state["clear_review_input"] = False  # 플래그 해제
-
-        # 입력란 렌더링 (이후에는 값 변경 금지)
-        review_text = st.text_area(
-            "리뷰 내용을 입력하세요",
-            placeholder="자유롭게 리뷰를 작성해주세요",
-            key="review_input"
-        )
-
-        # 등록 버튼
-        if st.button("리뷰 등록"):
-            if review_text.strip() == "":
-                st.warning("리뷰 내용을 입력해주세요.")
-            else:
-                now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                new_row = [selected_store, now, review_text]
-                sheet_review.append_row(new_row, value_input_option='RAW')
-                st.success("✅ 리뷰가 등록되었습니다!")
-
-                # 다음 렌더링 때 초기화되도록 플래그 설정
-                st.session_state["clear_review_input"] = True
-                st.rerun() 
-
-    st.divider()
-    # st.subheader(f"📋 '{selected_store}'에 대한 리뷰 목록")
-
-    # 전체 리뷰 불러오기
-    reviews = sheet_review.get_all_values()[1:]  # 헤더 제외
-    reviews = sorted(reviews, key=lambda x: x[1], reverse=True)
-
-    # 필터링
-    if selected_store == '전체':
-        filtered_reviews = reviews
-        st.subheader('📋 전체 음식점 리뷰')
-    else:
-        filtered_reviews = [r for r in reviews if r[0].strip() == selected_store.strip()]
-        st.subheader(f"📋 '{selected_store}'에 대한 리뷰 목록")
-    
-    if filtered_reviews:
-        for r in filtered_reviews:
-            st.markdown(f"### 🍽️ {r[0]}")
-            st.markdown(f"**🕒 {r[1]}**")
-            st.write(r[2])
-            st.markdown("---")
-    else:
-        st.info('아직 등록된 리뷰가 없습니다. ')
-
-    # store_reviews = [r for r in reviews if r[0].strip() == selected_store.strip()]
-    # store_reviews = sorted(store_reviews, key=lambda x: x[1], reverse=True)
-
-    # if store_reviews:
-    #     for r in store_reviews:
-    #         st.markdown(f"**🕒 {r[1]}**")
-    #         st.write(r[2])
-    #         st.markdown("---")
-    # else:
-    #     st.info("아직 등록된 리뷰가 없습니다.")
 
 # ============================================
 # ✅ EDA 페이지
