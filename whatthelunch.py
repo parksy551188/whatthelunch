@@ -67,7 +67,7 @@ if page == "🍽️ 음식점 추천":
     visit_records = df_visit[person_name].dropna().tolist()
     recent = [r.strip() for r in visit_records if r][-5:]
 
-    # col_idx = names.index(person_name) + 2
+    col_idx = names.index(person_name) + 2
     # visit_records = sheet_visit.col_values(col_idx)[1:]
     # recent = [r.strip() for r in visit_records if r][-5:]
 
