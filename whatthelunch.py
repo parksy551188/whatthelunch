@@ -92,11 +92,18 @@ if page == "🍽️ 음식점 추천":
         with col1:
             if st.button('이 음식점으로 선택'):
                 today = datetime.today().strftime('%Y-%m-%d')
-                next_row = len(sheet_visit.col_values(1)) + 1
+
+                visit_data = get_visit_data()
+                next_row = len(visit_data)+1
+                
+                names = get_name_list()
+                col_idx = names.index(person_name) +2
+                
                 cell_list = sheet_visit.range(next_row, 1, next_row, col_idx)
                 cell_list[0].value = today
                 cell_list[-1].value = st.session_state.current_choice
                 sheet_visit.update_cells(cell_list)
+                
                 st.success("✅ 저장 완료!")
                 del st.session_state.current_choice
 
