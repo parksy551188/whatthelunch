@@ -34,51 +34,25 @@ if page == "🍽️ 음식점 추천":
         st.warning("⚠️ 이름을 선택해 주세요.")
         st.stop()
 
-    if "selected_person" not in st.session_state:
-        st.session_state.selected_person = person_name
-    elif st.session_state.selected_person != person_name:
-        st.session_state.selected_person = person_name
-        st.session_state.current_choice = None
-        st.session_state.recommend_pool = None
-
     col_idx = names.index(person_name) + 2
-    visit_records_raw = sheet_visit.col_values(col_idx)[1:]
+    visit_records = sheet_visit.col_values(col_idx)[1:]
+    recent = [r.strip() for r in visit_records if r][-5:]
 
-    # ⚠️ visit_records 디버깅 로그 출력
-    st.write("📋 visit_records_raw", visit_records_raw)
+    st.markdown(f"최근 **{person_name}**님의 방문 음식점: {' / '.join(recent)}")
 
-    visit_records = [r.strip() for r in visit_records_raw if r and r.strip() != ""]
-    recent = visit_records[-5:]  # 최근 5개만 추출
-
-    st.markdown(f"최근 **{person_name}**님의 방문 음식점: {' / '.join(recent) if recent else '없음'}")
-
-    # ⚠️ restaurant_lst 디버깅 로그
-    restaurant_cleaned = list(set([r.strip() for r in restaurant_lst if r and r.strip() != ""]))
-    st.write("📋 restaurant_cleaned", restaurant_cleaned)
-
-    # 후보 음식점 추출
+    # 🔄 후보 음식점은 매번 새로 계산 (최근 5곳만 제외)
+    restaurant_cleaned = [r.strip() for r in restaurant_lst]
     candidates = [r for r in restaurant_cleaned if r not in recent]
-
-    # ⚠️ candidates 디버깅 로그
-    st.write("📋 candidates", candidates)
 
     if not candidates:
         st.warning("추천할 음식점이 없습니다.")
         st.stop()
 
-    if 'recommend_pool' not in st.session_state:
-        st.session_state.recommend_pool = candidates.copy()
-    if 'current_choice' not in st.session_state:
-        st.session_state.current_choice = None
-
     if st.button('추천'):
-        if st.session_state.recommend_pool:
-            st.session_state.current_choice = random.choice(st.session_state.recommend_pool)
-            st.session_state.recommend_pool.remove(st.session_state.current_choice)
-        else:
-            st.warning("추천할 음식점이 더 없습니다.")
+        current_choice = random.choice(candidates)
+        st.session_state.current_choice = current_choice
 
-    if st.session_state.current_choice:
+    if 'current_choice' in st.session_state and st.session_state.current_choice:
         st.success(f'🍽️ 추천 음식점: **{st.session_state.current_choice}**')
 
         col1, col2 = st.columns(2)
@@ -91,16 +65,12 @@ if page == "🍽️ 음식점 추천":
                 cell_list[-1].value = st.session_state.current_choice
                 sheet_visit.update_cells(cell_list)
                 st.success("✅ 저장 완료!")
-                del st.session_state.recommend_pool
                 del st.session_state.current_choice
 
         with col2:
             if st.button("다른 음식점 선택하기"):
-                if st.session_state.recommend_pool:
-                    st.session_state.current_choice = random.choice(st.session_state.recommend_pool)
-                    st.session_state.recommend_pool.remove(st.session_state.current_choice)
-                else:
-                    st.warning("추천할 음식점이 더 없습니다.")
+                current_choice = random.choice(candidates)
+                st.session_state.current_choice = current_choice
 
 # ============================================
 # ✅ 리뷰 작성 및 보기 페이지
