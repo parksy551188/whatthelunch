@@ -28,11 +28,12 @@ sheet_review = get_worksheet("리뷰")
 def get_visit_data():
     return sheet_visit.get_all_values()
 
-@st.cache_data(ttl=60)
-def get_restaurant_list():
-    return [r.strip() for r in sheet_store.col_values(2)[1:]]
+@st.cache_data
+def get_restaurant_list_from_file():
+    with open("store_lst.txt", encoding="utf-8") as f:
+        return [line.strip() for line in f if line.strip()]
 
-restaurant_lst = get_restaurant_list()
+restaurant_lst = get_restaurant_list_from_file()
 
 # --- 페이지 분기 ---
 page = st.sidebar.selectbox("페이지 선택", [ "📝 리뷰","🍽️ 음식점 추천", "📊 방문 통계"])
@@ -94,18 +95,23 @@ if page == "🍽️ 음식점 추천":
                 today = datetime.today().strftime('%Y-%m-%d')
 
                 visit_data = get_visit_data()
-                next_row = len(visit_data)+1
-                
+                next_row = len(visit_data) + 1
+
                 names = get_name_list()
-                col_idx = names.index(person_name) +2
-                
-                cell_list = sheet_visit.range(next_row, 1, next_row, col_idx)
-                cell_list[0].value = today
-                cell_list[-1].value = st.session_state.current_choice
-                sheet_visit.update_cells(cell_list)
-                
-                st.success("✅ 저장 완료!")
-                del st.session_state.current_choice
+                col_idx = names.index(person_name) + 2  # 이름에 해당하는 열
+
+                try:
+                    # 날짜 업데이트 (A열)
+                    sheet_visit.update(f"A{next_row}", today)
+                    # 음식점 이름 업데이트 (해당 사람 열)
+                    col_letter = chr(64 + col_idx)  # 1=A, 2=B, ...
+                    sheet_visit.update(f"{col_letter}{next_row}", st.session_state.current_choice)
+
+                    st.success("✅ 저장 완료!")
+                    del st.session_state.current_choice
+                except Exception as e:
+                    st.error("⚠️ 저장 중 오류가 발생했습니다.")
+                    st.exception(e)
 
         with col2:
             if st.button("다른 음식점 선택하기"):
