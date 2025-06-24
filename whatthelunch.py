@@ -21,13 +21,6 @@ restaurant_lst = [row[1].strip() for row in sheet_store.get_all_values()[1:] if 
 # --- 페이지 분기 ---
 page = st.sidebar.selectbox("페이지 선택", [ "📝 리뷰","🍽️ 음식점 추천", "📊 방문 통계"])
 
-try:
-    spreadsheet = client.open("ys_store")  # 정확한 이름
-    st.success("✅ 스프레드시트 연결 성공!")
-except Exception as e:
-    st.error("❌ 스프레드시트 열기 실패!")
-    st.text(e)
-
 # ============================================
 # ✅ 추천 기능 페이지
 # ============================================
@@ -57,6 +50,7 @@ if page == "🍽️ 음식점 추천":
 
     restaurant_cleaned = [r.strip() for r in restaurant_lst]
     candidates = [r for r in restaurant_cleaned if r not in recent]
+    
     if not candidates:
         st.warning("추천할 음식점이 없습니다.")
         st.stop()
