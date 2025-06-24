@@ -16,7 +16,15 @@ sheet_store = spreadsheet.worksheet("음식점리스트")
 sheet_visit = spreadsheet.worksheet("방문기록")
 sheet_review = spreadsheet.worksheet("리뷰")  # ✅ 리뷰 시트
 
-restaurant_lst = [row[1].strip() for row in sheet_store.get_all_values()[1:] if row[1]]
+@st.cache_data(ttl=60)
+def get_visit_data():
+    return sheet_visit.get_all_values()
+
+@st.cache_data(ttl=60)
+def get_restaurant_list():
+    return [r.strip() for r in sheet_store.col_values(1)[1:]]
+
+restaurant_lst = get_restaurant_list()
 
 # --- 페이지 분기 ---
 page = st.sidebar.selectbox("페이지 선택", [ "📝 리뷰","🍽️ 음식점 추천", "📊 방문 통계"])
@@ -27,7 +35,11 @@ page = st.sidebar.selectbox("페이지 선택", [ "📝 리뷰","🍽️ 음식�
 if page == "🍽️ 음식점 추천":
     st.title("🍽️ 점심 뭐먹🤔")
 
-    names = sheet_visit.row_values(1)[1:]
+    @st.cache_data(ttl=60)
+    def get_name_list():
+        return sheet_visit.row_values(1)[1:]
+
+    names = get_name_list()
     person_name = st.selectbox("이름을 선택하세요", names)
 
     if not person_name:
@@ -150,7 +162,7 @@ elif page == "📊 방문 통계":
     st.title("📊 방문 통계 분석")
 
     # 시트 데이터 전체 한 번만 가져오기 (사용량 최소화)
-    visit_data = sheet_visit.get_all_values()
+    visit_data = get_visit_data()
     if len(visit_data) < 2:
         st.info('방문 기록이 아직 없습니다.')
         st.stop()
