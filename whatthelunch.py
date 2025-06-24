@@ -44,6 +44,9 @@ if page == "🍽️ 음식점 추천":
     col_idx = names.index(person_name) + 2
     visit_records_raw = sheet_visit.col_values(col_idx)[1:]
 
+    # ⚠️ visit_records 디버깅 로그 출력
+    st.write("📋 visit_records_raw", visit_records_raw)
+
     visit_records = [r.strip() for r in visit_records_raw if r and r.strip() != ""]
     recent = visit_records[-5:]  # 최근 5개만 추출
 
@@ -51,9 +54,13 @@ if page == "🍽️ 음식점 추천":
 
     # ⚠️ restaurant_lst 디버깅 로그
     restaurant_cleaned = list(set([r.strip() for r in restaurant_lst if r and r.strip() != ""]))
+    st.write("📋 restaurant_cleaned", restaurant_cleaned)
 
     # 후보 음식점 추출
     candidates = [r for r in restaurant_cleaned if r not in recent]
+
+    # ⚠️ candidates 디버깅 로그
+    st.write("📋 candidates", candidates)
 
     if not candidates:
         st.warning("추천할 음식점이 없습니다.")
