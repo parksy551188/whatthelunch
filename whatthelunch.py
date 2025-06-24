@@ -27,9 +27,15 @@ page = st.sidebar.selectbox("페이지 선택", [ "📝 리뷰","🍽️ 음식�
 if page == "🍽️ 음식점 추천":
     st.title("🍽️ 점심 뭐먹🤔")
 
+    # 이름 목록 추출
     names = sheet_visit.row_values(1)[1:]
     person_name = st.selectbox("이름을 선택하세요", names)
 
+    if not person_name:
+        st.warning("⚠️ 이름을 선택해 주세요.")
+        st.stop()
+
+    # 선택한 이름 저장 및 변경 시 상태 초기화
     if "selected_person" not in st.session_state:
         st.session_state.selected_person = person_name
     elif st.session_state.selected_person != person_name:
@@ -37,29 +43,28 @@ if page == "🍽️ 음식점 추천":
         st.session_state.current_choice = None
         st.session_state.recommend_pool = None
 
-    if not person_name:
-        st.warning("⚠️ 이름을 선택해 주세요.")
-        st.stop()
-
+    # 방문 기록 가져오기
     col_idx = names.index(person_name) + 2
     visit_records = sheet_visit.col_values(col_idx)[1:]
-    dates = sheet_visit.col_values(1)[1:]
-    recent = [r.strip() for r in visit_records if r][-5:]
+    recent = [r.strip() for r in visit_records if r][-5:]  # 최근 5개 strip
 
-    st.markdown(f"최근 **{person_name}**님의 방문 음식점: {' / '.join(recent)}")
+    st.markdown(f"최근 **{person_name}**님의 방문 음식점: {' / '.join(recent) if recent else '없음'}")
 
-    restaurant_cleaned = [r.strip() for r in restaurant_lst]
+    # 음식점 리스트 정제
+    restaurant_cleaned = [r.strip() for r in restaurant_lst if r.strip()]
     candidates = [r for r in restaurant_cleaned if r not in recent]
-    
+
     if not candidates:
         st.warning("추천할 음식점이 없습니다.")
         st.stop()
 
+    # 추천 풀 초기화
     if 'recommend_pool' not in st.session_state:
         st.session_state.recommend_pool = candidates.copy()
     if 'current_choice' not in st.session_state:
         st.session_state.current_choice = None
 
+    # 추천 버튼
     if st.button('추천'):
         if st.session_state.recommend_pool:
             st.session_state.current_choice = random.choice(st.session_state.recommend_pool)
@@ -67,8 +72,10 @@ if page == "🍽️ 음식점 추천":
         else:
             st.warning("추천할 음식점이 더 없습니다.")
 
+    # 추천 결과 표시
     if st.session_state.current_choice:
         st.success(f'🍽️ 추천 음식점: **{st.session_state.current_choice}**')
+
         col1, col2 = st.columns(2)
         with col1:
             if st.button('이 음식점으로 선택'):
@@ -79,8 +86,11 @@ if page == "🍽️ 음식점 추천":
                 cell_list[-1].value = st.session_state.current_choice
                 sheet_visit.update_cells(cell_list)
                 st.success("✅ 저장 완료!")
+
+                # 상태 초기화
                 del st.session_state.recommend_pool
                 del st.session_state.current_choice
+
         with col2:
             if st.button("다른 음식점 선택하기"):
                 if st.session_state.recommend_pool:
