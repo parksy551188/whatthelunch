@@ -138,7 +138,7 @@ elif page == "📝 리뷰":
         st.subheader('📋 전체 음식점 리뷰')
     else:
         filtered_reviews = [r for r in reviews if r[0].strip() == selected_store.strip()]
-        st.subheader(f"📋 '{selected_store}'에 대한 리뷰 목록")and
+        st.subheader(f"📋 '{selected_store}'에 대한 리뷰 목록")
     
     if filtered_reviews:
         for r in filtered_reviews:
